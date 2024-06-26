@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive HTML Panel with AR.js</title>
+    <title>Interactive HTML Panel in AR.js</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/bryik/aframe-html-shader@master/dist/aframe-html-shader.min.js"></script>
@@ -43,7 +43,7 @@
         <!-- Marker definition -->
         <a-marker preset="hiro">
             <!-- Plane with HTML texture -->
-            <a-plane position="0 1 0" width="2" height="2" rotation="-90 0 0" material="shader: html; target: #content;"></a-plane>
+            <a-plane position="0 0.5 0" width="2" height="1.5" rotation="-90 0 0" material="shader: html; target: #content;"></a-plane>
         </a-marker>
         <a-entity camera></a-entity>
     </a-scene>
