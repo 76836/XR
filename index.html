@@ -6,6 +6,7 @@
     <title>Interactive HTML Panel with AR.js</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/bryik/aframe-html-shader@master/dist/aframe-html-shader.min.js"></script>
     <style>
         body, html {
             margin: 0;
@@ -23,46 +24,28 @@
             top: 0;
             left: 0;
         }
-        iframe {
-            border: none;
-            width: 800px;
-            height: 600px;
+        .content {
+            width: 512px;
+            height: 512px;
         }
     </style>
 </head>
 <body>
     <div class="ar-content">
-        <iframe src="../Akari"></iframe>
+        <div class="content" id="content">
+            <h1>Interactive HTML Panel</h1>
+            <p>This is an example of an interactive HTML panel in AR.</p>
+            <button onclick="alert('Button Clicked!')">Click Me</button>
+        </div>
     </div>
 
     <a-scene embedded arjs class="ar-scene">
         <!-- Marker definition -->
         <a-marker preset="hiro">
             <!-- Plane with HTML texture -->
-            <a-plane position="0 0.5 0" width="2" height="1.5" rotation="-90 0 0" material="shader: html; target: #html-texture;"></a-plane>
+            <a-plane position="0 1 0" width="2" height="2" rotation="-90 0 0" material="shader: html; target: #content;"></a-plane>
         </a-marker>
         <a-entity camera></a-entity>
     </a-scene>
-
-    <script>
-        // Create an offscreen canvas to render the HTML content
-        const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 600;
-        const ctx = canvas.getContext('2d');
-        const htmlContent = document.querySelector('.ar-content iframe');
-        
-        // Update canvas with HTML content every frame
-        function updateCanvas() {
-            ctx.drawImage(htmlContent.contentWindow.document.body, 0, 0, canvas.width, canvas.height);
-            requestAnimationFrame(updateCanvas);
-        }
-
-        // Start updating the canvas when the iframe is loaded
-        htmlContent.onload = () => {
-            document.querySelector('a-plane').setAttribute('material', `shader: html; target: ${canvas.toDataURL()}`);
-            updateCanvas();
-        };
-    </script>
 </body>
 </html>
