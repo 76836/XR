@@ -1,59 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AR VRM Model Demo</title>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@webxr/polyfill@latest/dist/webxr-polyfill.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR VRoid Character</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #enterAR {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+            padding: 10px;
+            background: white;
+            border: 1px solid black;
+        }
+    </style>
 </head>
 <body>
-    <script>
-        // Initialize scene, camera, and renderer
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.xr.enabled = true;
-        document.body.appendChild(renderer.domElement);
+    <button id="enterAR">Enter AR</button>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js';
+        import { VRMLoader } from 'https://cdn.jsdelivr.net/npm/three-vrm@1.0.0-beta.1/lib/three-vrm.module.js';
+        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/webxr/ARButton.js';
 
-        // Load VRM model
-        const loader = new THREE.GLTFLoader();
-        loader.load('./test.vrm', function (gltf) {
-            scene.add(gltf.scene);
-        }, undefined, function (error) {
-            console.error(error);
-        });
+        let scene, camera, renderer, vrmModel, clock, mixer;
 
-        // Set up WebXR session
-        function onSessionStart(session) {
-            renderer.xr.setSession(session);
-            session.addEventListener('end', onSessionEnd);
-            animate();
-        }
+        // Initialize Scene
+        init();
 
-        function onSessionEnd() {
-            renderer.xr.setSession(null);
-        }
+        function init() {
+            scene = new THREE.Scene();
 
-        function animate() {
-            renderer.setAnimationLoop(function () {
-                renderer.render(scene, camera);
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // Add Light
+            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+            scene.add(light);
+
+            // Load VRM Model
+            const loader = new VRMLoader();
+            loader.load('./test.vrm', (vrm) => {
+                vrmModel = vrm.scene;
+                vrmModel.scale.set(0.3, 0.3, 0.3); // Adjust scale for AR
+                scene.add(vrmModel);
+
+                // Idle Animation Mixer
+                mixer = new THREE.AnimationMixer(vrmModel);
+                const idleAnimation = vrm.animations.find(clip => clip.name === 'idle'); // Or your animation name
+                if (idleAnimation) {
+                    const action = mixer.clipAction(idleAnimation);
+                    action.play();
+                }
             });
+
+            clock = new THREE.Clock();
+
+            // Add ARButton
+            const enterARButton = ARButton.createButton(renderer);
+            document.body.appendChild(enterARButton);
+
+            renderer.setAnimationLoop(render);
         }
 
-        // Handle AR button
-        const arButton = document.createElement('button');
-        arButton.innerText = 'Enter AR';
-        arButton.style.position = 'absolute';
-        arButton.style.bottom = '20px';
-        arButton.style.left = '50%';
-        arButton.style.transform = 'translateX(-50%)';
-        arButton.onclick = function () {
-            navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['local-floor', 'bounded-floor'] })
-                .then(onSessionStart);
-        };
-        document.body.appendChild(arButton);
+        // Render Loop
+        function render() {
+            const delta = clock.getDelta();
+            if (mixer) mixer.update(delta); // Update the animation mixer
+            renderer.render(scene, camera);
+        }
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
