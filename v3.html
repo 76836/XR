@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akari XR test 3</title>
+    <title>Akari XR test 3b</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -29,7 +29,7 @@
         import { ARButton } from 'three/addons/webxr/ARButton.js';
 
         // Scene, Camera, Renderer setup
-        var scene = new THREE.Scene();
+        const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
         
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -51,8 +51,8 @@
         // Install a GLTFLoader plugin that enables VRM support
         loader.register((parser) => new VRMLoaderPlugin(parser));
 
-        // Load the VRM model
         let vrm;
+        // Load the VRM model
         loader.load(
             './test.vrm',  // Replace with your VRM file path
 
@@ -99,8 +99,8 @@
                             // Detect ground plane and position model
                             const detectedPlanes = frame.detectedPlanes;
                             detectedPlanes.forEach((plane) => {
-                                if (plane.type === 'plane') {
-                                    const planePose = frame.getPose(plane.space, renderer.xr.getReferenceSpace());
+                                if (plane.orientation === 'horizontal' && plane.extent) {
+                                    const planePose = frame.getPose(plane.planeSpace, renderer.xr.getReferenceSpace());
                                     if (planePose) {
                                         vrm.scene.position.y = planePose.transform.position.y;
                                     }
@@ -116,12 +116,6 @@
         function onSessionStart(session) {
             renderer.xr.setSession(session);
             session.addEventListener('end', onSessionEnd);
-
-            // Optionally, you can adjust model position upon session start if needed
-            if (vrm) {
-                vrm.scene.position.y = 0; // Ensure model is on the ground
-                vrm.scene.rotation.y = Math.PI; // Ensure model is rotated 180 degrees
-            }
 
             animate();
         }
