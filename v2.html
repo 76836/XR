@@ -31,8 +31,8 @@
         // Scene, Camera, Renderer setup
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        vrm.scene.position.set(0, 0, -3);  // Move the model 3 units away from the camera
-        vrm.scene.rotation.y = Math.PI;  // Rotate 180 degrees to face the camera
+        camera.position.set(0, 0, -3);  // Move the model 3 units away from the camera
+        camera.rotation.y = Math.PI;  // Rotate 180 degrees to face the camera
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
