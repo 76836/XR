@@ -88,22 +88,11 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Add the animation mixer for the VRM model
-const mixer = new THREE.AnimationMixer(vrm.scene);
-
-// Check if the VRM has any predefined animations, like "idle"
-const idleAction = mixer.clipAction(vrm.humanoid.getBoneNode('Hips').animations[0]);
-idleAction.play();
-
-// Animation loop to update the mixer
-function animate() {
-    const delta = clock.getDelta();  // Get time passed since last frame
-    mixer.update(delta);  // Update animations
-    renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
-    });
-}
-
+        function animate() {
+            renderer.setAnimationLoop(() => {
+                renderer.render(scene, camera);
+            });
+        }
 
         animate();
     </script>
