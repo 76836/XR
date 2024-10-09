@@ -60,7 +60,7 @@
                 // Retrieve the VRM instance from the GLTF
                 const vrm = gltf.userData.vrm;
                 vrm.scene.position.y = 0; // Position the model on the ground
-                vrm.scene.position.set(0, 0, -10);  // Move the model 3 units away from the camera
+                vrm.scene.position.set(0, 0, -1);  // Move the model 3 units away from the camera
                 vrm.scene.rotation.y = Math.PI; // Rotate the model by 180 degrees
                 // Add the loaded VRM to the scene
                 vrm.scene.scale.set(1, 1, 1); // Adjust size if needed
@@ -110,7 +110,7 @@
                     }
                 });
             });
-
+        };
         
 
         
