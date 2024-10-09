@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR test</title>
+    <title>AR Simple Box</title>
     <style>
         body { margin: 0; overflow: hidden; }
         #enterAR {
@@ -19,69 +19,57 @@
 </head>
 <body>
     <button id="enterAR">Enter AR</button>
+
     <script type="module">
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js';
-        import { VRMLoader } from 'https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@1.0.1/lib/three-vrm.module.js';
-        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/webxr/ARButton.js';
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
+        import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/webxr/ARButton.js';
 
-        let scene, camera, renderer, vrmModel, clock, mixer;
-
-        // Initialize Scene
-        init();
+        let camera, scene, renderer, box;
 
         function init() {
+            // Set up the scene
             scene = new THREE.Scene();
 
+            // Set up the camera
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
+            // Set up the renderer with WebXR enabled
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
             renderer.xr.enabled = true;
             document.body.appendChild(renderer.domElement);
 
-            // Add Light
-            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-            scene.add(light);
+            // Create a basic box
+            const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            box = new THREE.Mesh(geometry, material);
+            box.position.set(0, 0, -1);  // Place it 1 meter in front of the camera
+            scene.add(box);
 
-            // Load VRM Model
-            const loader = new VRMLoader();
-            loader.load('./path_to_your_vrm_model.vrm', (vrm) => {
-                vrmModel = vrm.scene;
-                vrmModel.scale.set(0.3, 0.3, 0.3); // Adjust scale for AR
-                scene.add(vrmModel);
-
-                // Idle Animation Mixer
-                mixer = new THREE.AnimationMixer(vrmModel);
-                const idleAnimation = vrm.animations.find(clip => clip.name === 'idle'); // Or your animation name
-                if (idleAnimation) {
-                    const action = mixer.clipAction(idleAnimation);
-                    action.play();
-                }
+            // Handle AR button creation
+            const enterARButton = document.getElementById('enterAR');
+            enterARButton.addEventListener('click', () => {
+                document.body.appendChild(ARButton.createButton(renderer));
+                renderer.setAnimationLoop(render);
             });
 
-            clock = new THREE.Clock();
-
-            // Add ARButton
-            const enterARButton = ARButton.createButton(renderer);
-            document.body.appendChild(enterARButton);
-
-            renderer.setAnimationLoop(render);
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
         }
 
-        // Render Loop
         function render() {
-            const delta = clock.getDelta();
-            if (mixer) mixer.update(delta); // Update the animation mixer
             renderer.render(scene, camera);
         }
 
-        // Handle Window Resize
-        window.addEventListener('resize', () => {
+        function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        }
+
+        // Initialize the scene
+        init();
     </script>
 </body>
 </html>
