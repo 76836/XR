@@ -1,68 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive HTML Panel with AR.js</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/bryik/aframe-html-shader@master/dist/aframe-html-shader.min.js"></script>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .ar-content {
-            display: none;
-        }
-        .ar-scene {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .content {
-            width: 800px;
-            height: 600px;
-        }
-    </style>
+    <title>AR VRM Model Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/examples/js/libs/draco/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/examples/js/libs/gltf-loader/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.3/examples/js/libs/VRMLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webxr/polyfill@latest/dist/webxr-polyfill.min.js"></script>
 </head>
 <body>
-    <div class="ar-content">
-        <div class="content" id="content">
-            <iframe width="800" height="600" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=QH5JaTT5IIWEOLUh" frameborder="0" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <a-scene embedded arjs class="ar-scene">
-        <!-- Marker definition -->
-        <a-marker preset="hiro">
-            <!-- Plane with HTML texture -->
-            <a-plane position="0 1 0" width="2" height="1.5" rotation="-90 0 0" material="shader: html; target: #content;"></a-plane>
-        </a-marker>
-        <a-entity camera></a-entity>
-    </a-scene>
-
     <script>
-        // This script ensures the iframe content is properly rendered
-        const iframe = document.querySelector('iframe');
-        iframe.onload = () => {
-            const content = document.querySelector('#content');
-            const canvas = document.createElement('canvas');
-            canvas.width = content.offsetWidth;
-            canvas.height = content.offsetHeight;
-            const ctx = canvas.getContext('2d');
+        // Initialize scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
 
-            function updateCanvas() {
-                ctx.drawImage(iframe.contentWindow.document.body, 0, 0, canvas.width, canvas.height);
-                document.querySelector('a-plane').setAttribute('material', 'src', canvas.toDataURL());
-                requestAnimationFrame(updateCanvas);
-            }
-            updateCanvas();
+        // Load VRM model
+        const loader = new THREE.GLTFLoader();
+        loader.load('./test.vrm', function (gltf) {
+            scene.add(gltf.scene);
+        }, undefined, function (error) {
+            console.error(error);
+        });
+
+        // Set up WebXR session
+        function onSessionStart(session) {
+            renderer.xr.setSession(session);
+            session.addEventListener('end', onSessionEnd);
+            animate();
+        }
+
+        function onSessionEnd() {
+            renderer.xr.setSession(null);
+        }
+
+        function animate() {
+            renderer.setAnimationLoop(function () {
+                renderer.render(scene, camera);
+            });
+        }
+
+        // Handle AR button
+        const arButton = document.createElement('button');
+        arButton.innerText = 'Enter AR';
+        arButton.style.position = 'absolute';
+        arButton.style.bottom = '20px';
+        arButton.style.left = '50%';
+        arButton.style.transform = 'translateX(-50%)';
+        arButton.onclick = function () {
+            navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['local-floor', 'bounded-floor'] })
+                .then(onSessionStart);
         };
+        document.body.appendChild(arButton);
     </script>
 </body>
 </html>
