@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akari XR test 2</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Import map for three.js and three-vrm -->
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+            "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3/lib/three-vrm.module.min.js"
+          }
+        }
+    </script>
+
+    <!-- Main AR + VRM loader script -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { VRMLoaderPlugin } from '@pixiv/three-vrm';
+        import { ARButton } from 'three/addons/webxr/ARButton.js';
+
+        // Scene, Camera, Renderer setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        vrm.scene.position.set(0, 0, -3);  // Move the model 3 units away from the camera
+        vrm.scene.rotation.y = Math.PI;  // Rotate 180 degrees to face the camera
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true; // Enable WebXR for AR
+        document.body.appendChild(renderer.domElement);
+
+        // AR button
+        document.body.appendChild(ARButton.createButton(renderer));
+
+        // Add directional light
+        const light = new THREE.DirectionalLight(0xffffff);
+        light.position.set(0, 1, 1).normalize();
+        scene.add(light);
+
+        // Create a GLTFLoader - The loader for loading VRM models
+        const loader = new GLTFLoader();
+
+        // Install a GLTFLoader plugin that enables VRM support
+        loader.register((parser) => new VRMLoaderPlugin(parser));
+
+        // Load the VRM model
+        loader.load(
+            './test.vrm',  // Replace with your VRM file path
+
+            // On successful load
+            (gltf) => {
+                // Retrieve the VRM instance from the GLTF
+                const vrm = gltf.userData.vrm;
+
+                // Add the loaded VRM to the scene
+                vrm.scene.scale.set(1, 1, 1); // Adjust size if needed
+                scene.add(vrm.scene);
+
+                // Optionally, log VRM features to inspect them
+                console.log(vrm);
+            },
+
+            // On loading progress
+            (progress) => {
+                console.log('Loading model...', (progress.loaded / progress.total) * 100, '%');
+            },
+
+            // On error
+            (error) => {
+                console.error('Error loading VRM model:', error);
+            }
+        );
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Add the animation mixer for the VRM model
+const mixer = new THREE.AnimationMixer(vrm.scene);
+
+// Check if the VRM has any predefined animations, like "idle"
+const idleAction = mixer.clipAction(vrm.humanoid.getBoneNode('Hips').animations[0]);
+idleAction.play();
+
+// Animation loop to update the mixer
+function animate() {
+    const delta = clock.getDelta();  // Get time passed since last frame
+    mixer.update(delta);  // Update animations
+    renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+    });
+}
+
+
+        animate();
+    </script>
+</body>
+</html>
