@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat UI  test</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+          "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3/lib/three-vrm.module.min.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { ARButton } from 'three/addons/webxr/ARButton.js';
+
+        let camera, scene, renderer;
+        let chatPlane, chatMessages = [];
+
+        init();
+        animate();
+
+        function init() {
+            // Setup scene and camera
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+            
+            document.body.appendChild(ARButton.createButton(renderer));
+
+            // Create a basic plane for chat messages (3D chat UI)
+            const planeGeometry = new THREE.PlaneGeometry(2, 1.5); // Width, Height
+            const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+            chatPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+            
+            // Position the plane in front of the camera (distance: 2 units)
+            chatPlane.position.set(0, 1, -2);
+            scene.add(chatPlane);
+
+            // Add a basic light
+            const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+            light.position.set(0, 1, 0);
+            scene.add(light);
+        }
+
+        // Function to add chat messages as 3D text
+        function addChatMessage(message) {
+            const loader = new THREE.FontLoader();
+            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+                const textGeometry = new THREE.TextGeometry(message, {
+                    font: font,
+                    size: 0.1,
+                    height: 0.02
+                });
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+                // Position the text on the chat plane, stacking messages
+                textMesh.position.set(-0.9, 0.7 - (chatMessages.length * 0.15), 0);
+                chatPlane.add(textMesh);
+                chatMessages.push(textMesh);
+            });
+        }
+
+        // Listen for keypress events to simulate chat input
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const message = prompt("Enter your message:");
+                if (message) {
+                    addChatMessage(message);
+                }
+            }
+        });
+
+        function animate() {
+            renderer.setAnimationLoop(render);
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
