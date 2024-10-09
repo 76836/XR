@@ -38,6 +38,14 @@
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
 
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(1, 1, 1).normalize();
+scene.add(light);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+      
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.xr.enabled = true;
@@ -60,7 +68,7 @@
         './test.vrm',  // Replace with your VRM model path
         (gltf) => {
           model = gltf.userData.vrm;
-          model.scene.scale.set(0.4, 0.4, 0.4);  // Adjust model scale
+          model.scene.scale.set(1, 1, 1);  // Adjust model scale
           model.scene.rotation.y = Math.PI;      // Face the model toward the user
           scene.add(model.scene);                // Add the model to the scene
 
