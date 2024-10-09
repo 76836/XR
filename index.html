@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR VRoid Character B</title>
+    <title>AR test</title>
     <style>
         body { margin: 0; overflow: hidden; }
         #enterAR {
@@ -21,7 +21,7 @@
     <button id="enterAR">Enter AR</button>
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js';
-        import { VRMLoader } from 'https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.1.2/lib/three-vrm.module.min.js';
+        import { VRMLoader } from 'https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@1.0.1/lib/three-vrm.module.js';
         import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/webxr/ARButton.js';
 
         let scene, camera, renderer, vrmModel, clock, mixer;
@@ -46,7 +46,7 @@
 
             // Load VRM Model
             const loader = new VRMLoader();
-            loader.load('./test.vrm', (vrm) => {
+            loader.load('./path_to_your_vrm_model.vrm', (vrm) => {
                 vrmModel = vrm.scene;
                 vrmModel.scale.set(0.3, 0.3, 0.3); // Adjust scale for AR
                 scene.add(vrmModel);
