@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akari XR test 3b</title>
+    <title>Akari XR test 3c</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -113,16 +113,9 @@
             });
         }
 
-        function onSessionStart(session) {
-            renderer.xr.setSession(session);
-            session.addEventListener('end', onSessionEnd);
-
+        
             animate();
-        }
 
-        function onSessionEnd() {
-            renderer.xr.setSession(null);
-        }
 
         // Handle AR button click
         const arButton = document.createElement('button');
