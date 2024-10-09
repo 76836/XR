@@ -29,7 +29,7 @@
         import { ARButton } from 'three/addons/webxr/ARButton.js';
 
         // Scene, Camera, Renderer setup
-        const scene = new THREE.Scene();
+        var scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
         
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -94,6 +94,26 @@
             });
         }
 
+
+
+
+// Set up WebXR session
+        function onSessionStart(session) {
+            renderer.xr.setSession(session);
+            session.addEventListener('end', onSessionEnd);
+
+            // Detect ground plane and position model
+            session.requestPlaneDetection().then((planes) => {
+                planes.forEach((plane) => {
+                    if (plane.type === 'ground') {
+                        vrm.scene.position.y = plane.distance;
+                    }
+                });
+            });
+
+        
+
+        
         animate();
     </script>
 </body>
