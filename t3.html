@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akari AR text test</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+      "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3/lib/three-vrm.module.min.js"
+    }
+  }
+</script>
+
+<script type="module">
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { VRMLoaderPlugin } from '@pixiv/three-vrm';
+  import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+  let scene, camera, renderer, labelRenderer, model;
+
+  function init() {
+    scene = new THREE.Scene();
+    
+    // Camera setup
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
+    camera.position.set(0, 1.6, 3);
+
+    // WebGLRenderer setup
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // CSS2DRenderer setup
+    labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    document.body.appendChild(labelRenderer.domElement);
+
+    // Load VRM model
+    const loader = new GLTFLoader();
+    loader.register((parser) => new VRMLoaderPlugin(parser));
+
+    loader.load('./test.vrm', (gltf) => {
+      model = gltf.userData.vrm;
+      scene.add(model.scene);
+
+      // Render text above the model
+      renderTextAboveModel("Hello AR World", model.scene);
+    });
+
+    // Debug: Static text to test CSS2DRenderer
+    const staticDiv = document.createElement('div');
+    staticDiv.className = 'label';
+    staticDiv.textContent = "Test Label"; // Add test text
+    staticDiv.style.color = '#FF0000'; // Bright red for visibility
+    staticDiv.style.fontSize = '20px';
+
+    const staticLabel = new CSS2DObject(staticDiv);
+    staticLabel.position.set(0, 1.5, -3); // Place in front of the camera
+    scene.add(staticLabel);
+
+    animate();
+  }
+
+  function renderTextAboveModel(text, targetObject) {
+    const div = document.createElement('div');
+    div.className = 'label';
+    div.textContent = text;
+    div.style.marginTop = '-1em';
+    div.style.color = '#FF0000'; // Bright red for visibility
+    div.style.fontSize = '20px';
+    div.style.zIndex = '10'; // Ensure it's on top of other elements
+
+    const label = new CSS2DObject(div);
+    label.position.set(0, 2.2, 0); // Adjust height
+    targetObject.add(label);
+
+    console.log("Label attached to:", targetObject); // Debug to ensure label is attached
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
+  }
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  init();
+</script>
+</body>
+</html>
